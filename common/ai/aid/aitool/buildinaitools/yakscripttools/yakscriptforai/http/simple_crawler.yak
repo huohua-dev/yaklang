@@ -180,7 +180,9 @@ for currentStartUrl in targetCandidates {
                 }
             }
         } catch {}
-        requestLines.Append(sprintf("[%v] [%v] %v", method, rspdesc, urlstr))
+        crawlLine = sprintf("[%v] [%v] %v", method, rspdesc, urlstr)
+        requestLines.Append(crawlLine)
+        yakit.Info("[crawled] %v", crawlLine)
     }
 
     if currentResults > 0 {
@@ -248,11 +250,6 @@ if len(statusCodePartsSorted) > 0 {
 output.WriteString("\n")
 output.WriteString(forest.Output())
 
-output.WriteString("\n=== Requested URLs ===\n")
-for line in requestLines {
-    output.WriteString(line)
-    output.WriteString("\n")
-}
 
 result = string(output.String())
 if len(result) <= 30000 {
@@ -285,8 +282,16 @@ if subdomainCount > 1 || pendingCount > 0 {
     yakit.Info("[coverage hint] Crawler discovered %v distinct subdomain(s) and %v unrequested URL(s) (see the website forest + pending count above). A common failure mode is to fixate on ONE subdomain or ONE thread and skip the rest. In your NEXT iteration, use `adjust_todo` to break the remaining surface into MULTIPLE concrete todos (e.g. one per subdomain / per untested endpoint group, plus auth, IDOR, and parameter testing for each) before diving into any single one. More (and finer-grained) todos => better depth and coverage, and they prevent the loop from finishing before the surface is covered.", subdomainCount, pendingCount)
 }
 
+// file save includes summary + forest + requested URLs (full record)
+fileResult = result
+if len(requestLines) > 0 {
+    fileResult = fileResult + "\n=== Requested URLs ===\n"
+    for line in requestLines {
+        fileResult = fileResult + line + "\n"
+    }
+}
 try {
     name := file.TempFileName(`crawler-result-*.txt`)~
-    file.Save(name, result)~
-    yakit.Info("crawler result log saved: %v (size: %v)", name, len(result))
+    file.Save(name, fileResult)~
+    yakit.Info("crawler result log saved: %v (size: %v)", name, len(fileResult))
 } catch {}
