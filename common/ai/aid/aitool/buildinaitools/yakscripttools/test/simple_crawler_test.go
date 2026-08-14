@@ -95,11 +95,11 @@ func TestSimpleCrawler_CoverageHint(t *testing.T) {
 	assert.Assert(t, strings.Contains(stdout, "todo"),
 		"hint should mention breaking work into todos")
 
-	// The standard crawl output must still be present (summary + requested URLs).
+	// The standard crawl output must still be present (summary + streamed crawled URLs).
 	assert.Assert(t, strings.Contains(stdout, "=== Crawl Summary ==="),
 		"standard crawl summary should still be present")
-	assert.Assert(t, strings.Contains(stdout, "=== Requested URLs ==="),
-		"requested URLs section should still be present")
+	assert.Assert(t, strings.Contains(stdout, "[crawled]"),
+		"streamed crawled URL lines should be present (replaces the old '=== Requested URLs ===' block)")
 }
 
 func TestSimpleCrawler_HidesAndDoesNotRequestURLFragments(t *testing.T) {
